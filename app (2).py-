@@ -1,0 +1,193 @@
+# app.py
+import streamlit as st
+import uuid
+import hashlib
+import sqlite3
+from datetime import datetime
+import localization as loc
+import engine as eng
+
+st.set_page_config(
+    page_title="Safe The People (STP) - Inspection Sandbox",
+    page_icon="🚨",
+    layout="wide"
+)
+
+# ডাটাবেজ সচল করা
+eng.init_advanced_database()
+
+# কাস্টম ডার্ক মেটালিক ও গোল্ডেন জাস্টিস থিম (Aesthetic UI)
+st.markdown("""
+<style>
+    .main { background-color: #090b0e; color: #e2e8f0; }
+    .stButton>button { background: linear-gradient(45deg, #d69e2e, #b7791f); color: white; border-radius: 4px; border: none; font-weight: bold; width: 100%; height: 45px; }
+    .stTextInput>div>div>input, .stTextArea>div>div>textarea, .stSelectbox>div>div>div { background-color: #11151d !important; color: white !important; border: 1px solid #2d3748 !important; }
+    div[data-testid="stExpander"] { background-color: #11151d !important; border: 1px solid #2d3748 !important; }
+    .sandbox-card { background-color: #1a202c; border: 2px dashed #d69e2e; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+</style>
+""", unsafe_allowed_html=True)
+
+# 👑 কর্মকর্তাদের প্রদর্শনের জন্য তৈরি ডেডিকেটেড স্যান্ডবক্স কন্ট্রোল প্যানেল (টপ ব্যানার)
+st.markdown("<div class='sandbox-card'><h3>👑 Official Inspection Control Panel (মন্ত্রণালয় ও জাতিসংঘ কর্মকর্তাদের ডেমো প্যানেল)</h3><p>এই ড্যাশবোর্ডটি দিয়ে লাইভ প্রেজেন্টেশনের সময় সিস্টেমের হাড়গোড় এবং ব্যাকএন্ড লজিক রিয়েল-টাইমে পরীক্ষা করা যাবে।</p></div>", unsafe_allowed_html=True)
+
+sandbox_col1, sandbox_col2 = st.columns(2)
+with sandbox_col1:
+    st.write("**১. টাইম ফাস্ট-ফরোয়ার্ড সিমুলেটর (Time-Lock Accelerator):**")
+    simulated_days = st.slider("মন্ত্রণালয়ের সামনে সময় এগিয়ে পরীক্ষা করুন (দিনের সংখ্যা নির্বাচন করুন):", 0, 12, 0)
+    if simulated_days > 0:
+        logs = eng.execute_time_lock_escalation_engine(simulated_days)
+        if logs:
+            for log in logs:
+                st.warning(log)
+        else:
+            st.info("ℹ️ এই সময়ের মধ্যে নতুন কোনো
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ অট ো-এসক্যালে শন ট্রি গার ঘটে নি ।")
+    else:
+        eng.execute_time_lock_escalation_engine(0)
+
+with sandbox_col2:
+    st.write("**২. ডেমো ডাটাবে জ কুইক রি লি জ স্ক্যানার:**")
+    if st.button("📊 বর্তমানে ডাটাবে জে জমান ো সব মামলার লাইভ মে ম োরি ক্যানভাস दे খুন"):
+        conn = sqlite3.connect(eng.DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("SELECT Case_ID, Country, System_Status, Target_Agency, Remarks FROM stp_cases")
+        rows = cursor.fetchall()
+        conn.close()
+        if rows:
+            st.dataframe(rows, use_container_width=True)
+        else:
+            st.info("ডাটাবে জ বর্তমানে শনূ্য। বাম পাশে র ক্যানভাসে একটি ডে ম ো অভি য োগ সাবми ট করুন।")
+
+st.divider()
+
+# --- মূল অ্যাপ্লিকেশন ক্যানভাস শুরু ---
+ALL_COUNTRIES = ["Bangladesh", "United States"]
+app_mode = st.sidebar.radio("STP System Navigation:", ["📝 সর্বজনীন অভি য োগ দাখি ল (Filing)", "🔍 লাইভ ট্র্যাকি ং প্যানে ল (Victim Tracker)"])
+
+if app_mode == "📝 সর্বজনীন অভি য োগ দাখি ল (Filing)":
+    user_country = st.sidebar.selectbox("📍 Jurisdiction / দে দেশ নি র্বাচন করুন:", ALL_COUNTRIES)
+    lex = loc.TRANSLATIONS.get(user_country, loc.TRANSLATIONS["United States"])
+    infra = loc.get_country_infrastructure(user_country)
+    
+    st.title(lex["title"])
+    st.caption(lex["subtitle"])
+    
+    with st.expander("📖 STP Global Guideline & Sovereignty Manifesto (অফি সি য়াল নি য়মনীতি ও কার্যপ্রণালী)", expanded=False):
+        st.write("""
+        * **শতভাগ নামহীন আইডে ন্টি টি:** ক্রি প্ট োগ্রাফি ক SHA-256 মাস্কি ং প্রযুক্তি র কারণে ভুক্তভ োগীর ক োন ো ব্যক্তি গত ডি জি টাল ফুটপ্রি ন্ট বা আইপি আমাদে র ন 役に জমা থাকে না।
+        * **৫০০ শব্দে র ফরে นসি ক ফি ল্টার:** অভি য োগে র আইনি গভীরতা নি শ্চি ত করতে বর্ণন া সুনি র্দি ষ্ট এবং ননূ্যতম ৫০০ শব্দে র হতে হবে । ভুয়া অভি য োগ ফি ল্টারি ং লজি ক এতে সক্রি য়।
+        * **২০টি সংস্থা ক োলাব োরে শন ও スマート राउटिंग:** সাবমি ট করার সাথে সাথে ক্যাটাগরি ম্যাпи ং করে পুলি শ, সে নাবাহি নী বা সাইবার ক্রাইমে র নি র্দি ষ্ট উইং-এ ডাটা ফর োয়ার্ড হয়।
+        * **জাতি সংঘ এসক্যালে শন প্রট োকল:** স্থানীয় ক োলাব োরে টে ড সংস্থা ৭২ ঘণ্টা থে কে ১০ দি নে র উইন্ড োর মধ্যে অ্যাকশন আপডে ট না দি লে , ফাইলটি স্বয়ংক্রি য়ভাবে জাতি সংঘে র সুইজারল্যান্ড জি ল্ডে (UNHCR International Desk) আন্তর্জাতি ক মামলার কপি হি সে বে ফর োয়ার্ড হয়ে যায়।
+        """)
+        
+    col1, col2 = st.columns([1.2, 1.0])
+    
+    with col1:
+        st.header(lex["header_filing"])
+        categories = ["🔒 Cyber Crimes", "🏠 Domestic Violence", "🏭 Labor Exploitation", "🌾 Corruption/Fundamental Rights"]
+        chosen_cat = st.selectbox(lex["lbl_cat"], categories)
+        
+        accused_name = st.text_input(lex["lbl_accused_name"])
+        accused_desig = st.text_input(lex["lbl_accused_desig"])
+        accused_contact = st.text_input(lex["lbl_accused_contact"])
+        
+        remedy_choice = st.selectbox(lex["lbl_remedy"], [
+            "1. Encrypted Data Archiving Only (তথ্য গ োপন ন োঙ্গরকরণ)", 
+            "2. Full Legal Notice & Rescue Action (আইনি पदक्षे প ও ৭২ ঘণ্টা টাইম-লক প্রট োকল)"
+        ])
+        
+        details = st.text_area(lex["lbl_details"], height=250, placeholder="এখানে আপনার অভি য োগটি বি স্তারি ত লি খুন (ননূ্যতম ৫০০ শব্দ)...")
+        word_count = len(details.split())
+        st.caption(f"Current Word Count (বর্তমান শব্দ সংখ্যা): {word_count} / 500 (Minimum Required)")
+        
+        uploaded_file = st.file_uploader(lex["lbl_evidence"], type=["png", "jpg", "jpeg", "pdf", "docx", "mp3"])
+        
+        num1, num2 = 5, 4
+        captcha_answer = st.number_input(f"{lex['lbl_captcha']} {num1} + {num2} = ?", step=1, value=0)
+        
+        if st.button(lex["btn_submit"]):
+            if word_count < 500:
+                st.error(lex["err_word_count"])
+            elif uploaded_file is None or not accused_name or not accused_contact:
+                st.error(lex["err_fields"])
+            elif captcha_answer != (num1 + num2):
+                st.error(lex["err_captcha"])
+            else:
+                with st.spinner(lex["ai_processing"]):
+                    is_authentic, ai_message = eng.run_ai_authenticity_check(details)
+                    st.info(f"🤖 **STP-AI Forensic Inspection Log:** {ai_message}")
+                    
+                    if not is_authentic:
+                        st.error("❌ Submission Rejected by Forensic Integrity Guard (ভুয়া বা অসম্পূর্ণ অভি য োগ হি সে বে এআই সি স্টে ম কর্তৃক বাতি ল)।")
+                    else:
+                        agency_name, agency_email = eng.process_smart_routing(chosen_cat, infra["agencies"])
+                        file_bytes = uploaded_file.read()
+                        evidence_hash = hashlib.sha256(file_bytes).hexdigest()
+                        case_id = uuid.uuid4().hex[:12].upper()
+                        secret_key = uuid.uuid4().hex[:16].upper()
+                        key_hash = hashlib.sha256(secret_key.encode()).hexdigest()
+                        
+                        conn = sqlite3.connect(eng.DB_FILE)
+                        cursor = conn.cursor()
+                        cursor.execute("""
+                        INSERT INTO stp_cases (Case_ID, Key_Hash, Timestamp, Country, Category, Accused_Name, 
+                        Accused_Contact, Remedy_Type, Evidence_Hash, Details_Snippet, System_Status, Target_Agency, Target_Email, Last_Updated, Remarks)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", 
+                        (case_id, key_hash, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), user_country, chosen_cat, 
+                         accused_name, accused_contact, remedy_choice, evidence_hash, details[:200], "Review Pending", agency_name, agency_email, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "Case secured inside cryptographic matrix nodes."))
+                        conn.commit()
+                        conn.close()
+                        
+                        st.success(lex["success_hide"])
+                        st.code(f"Case ID: {case_id}\nSecret Key: {secret_key}", language="text")
+                        st.warning("⚠️ কর্মকর্ম র্তাদে র নি র্दे শি কা: এই Case ID এবং Secret Key টি কপি করে রাখুন। ট্র্যাকি ং স্ট্যাটাস লাইভ পরীক্ষা করতে পারবে ন।")
+                        st.info(f"🎯 অট ো-রাউटिंग সফল: অভি য োগটি সরাসরি পাঠান ো হয়ে ছে : **{agency_name}** ({agency_email})")
+
+    with col2:
+        st.header(f"🏢 {user_country} Legal Canvas (সার্বভ ৌম নে টওয়ার্ক)")
+        st.write("আপনার প্রজে ক্টে র সাথে যুক্ত ডে ম ো অফি সি য়াল ও ক োলাব োরে টে ড সংস্থাসমহূ:")
+        
+        st.subheader("🚨 Quantum Legal Agencies (২০টি ক োলাব োরে টে ড সংস্থা)")
+        for agency in infra["agencies"]:
+            with st.expander(f"🏢 {agency['name']}", expanded=True):
+                st.write(f"Hotline/Secure Gateway: **{agency['contact']}**")
+                st.write(f"Sovereign Target Sector: `{agency['sector']}`")
+                
+        st.subheader("⚖️ Sovereign Attorney Panel (৪০ জন নি র্ধারি ত আইনজীবী)")
+        for lawyer in infra["attorneys"]:
+            with st.expander(f"⚖️ {lawyer['name']}"):
+                st.write(f"Secure Contact: {lawyer['contact']}")
+                st.write(f"Panel Specialty: {lawyer['type']}")
+
+elif app_mode == "🔍 লাইভ ট্র্যাকি ং প্যানে ল (Victim Tracker)":
+    st.header("🔍 লাইভ বে নামী অভি য োগ ট্র্যাকি ং প্যানে ল")
+    st.write("গ্রাহক ও পরি দর্শকরা এখানে মামলার বর্তমান অবস্থা রি য়ে ল-টাইমে ট্র্যাক করতে পারবে ন।")
+    
+    input_case_id = st.text_input("Case ID:").strip().upper()
+    input_secret_key = st.text_input("Secret Key:", type="password").strip()
+    
+    if input_case_id and input_secret_key:
+        conn = sqlite3.connect(eng.DB_FILE)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM stp_cases WHERE Case_ID = ?", (input_case_id,))
+        target_case = cursor.fetchone()
+        conn.close()
+        
+        if target_case and hashlib.sha256(input_secret_key.encode()).hexdigest() == target_case["Key_Hash"]:
